@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <div class="dash-greeting">
+        <p class="dash-greeting-eyebrow">Student dashboard</p>
+        <h1>Welcome back, {{ request.user.full_name }}</h1>
+        <p class="dash-sub">Reg. Number: <span class="input-mono">{{ request.user.student_profile.reg_number }}</span></p>
+    </div>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <p class="stat-card-label">Published Results</p>
+        <p class="stat-card-value">{{ result_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-card-label">Average CA Score</p>
+        <p class="stat-card-value">
+            {% if avg_percentage is not None %}{{ avg_percentage }}<span class="unit">%</span>{% else %}—{% endif %}
+        </p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-card-label">Open Conversations</p>
+        <p class="stat-card-value">{{ open_threads }}</p>
+    </div>
+</div>
+
+<div class="dash-section">
+    <div class="dash-section-header"><h2>Quick actions</h2></div>
+    <div class="quick-actions">
+        <a href="{% url 'my_results' %}" class="quick-action">
+            <span class="quick-action-icon">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M4 3h9l3 3v11a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/><path d="M7 10.5l2 2 4-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            View individual CA
+        </a>
+    </div>
+</div>
+
+<div class="dash-section">
+    <div class="dash-section-header">
+        <h2>Recent results</h2>
+        {% if recent_results %}<a href="{% url 'all_my_results' %}">View all &rarr;</a>{% endif %}
+    </div>
+
+    {% if recent_results %}
+        <div class="result-mini-grid">
+            {% for result in recent_results %}
+            <a href="{% url 'thread_detail' result.id %}" class="result-mini-card">
+                <div class="result-mini-card-top">
+                    <p class="result-mini-course">{{ result.course.code }}</p>
+                    {% if result.low_fill_warning %}<span class="result-mini-flag" title="Some scores may be missing">⚠</span>{% endif %}
+                </div>
+                <p class="result-mini-title">{{ result.course.title }}</p>
+                <p class="result-mini-score">
+                    {{ result.total_score }}<span class="unit">/{{ result.max_total }}</span>
+                </p>
+                <p class="result-mini-pct">{{ result.percentage }}%</p>
+                <span class="result-mini-cta">Discuss this result &rarr;</span>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No results published yet. Check back once your lecturer uploads CA scores.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

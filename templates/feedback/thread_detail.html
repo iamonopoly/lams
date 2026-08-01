@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Comments — {{ result.course.code }}{% endblock %}
+
+{% block content %}
+<h1>{{ result.course.code }} — {{ result.name }}</h1>
+<p class="subtitle">
+    Status:
+    <span class="status-pill status-{{ thread.status|lower }}">{{ thread.get_status_display }}</span>
+</p>
+
+<div class="thread">
+    {% for comment in comments %}
+        <div class="comment {% if comment.sender.is_lecturer %}comment-lecturer{% else %}comment-student{% endif %}">
+            <div class="comment-meta">
+                <strong>{{ comment.sender.full_name }}</strong>
+                <span class="muted">{{ comment.sender.get_role_display }} · {{ comment.created_at|date:"d M Y, H:i" }}</span>
+            </div>
+            <p>{{ comment.body|linebreaksbr }}</p>
+        </div>
+    {% empty %}
+        <p>No messages yet. Start the conversation below.</p>
+    {% endfor %}
+</div>
+
+{% if thread.status != "RESOLVED" %}
+<form method="post" class="form-card comment-form">
+    {% csrf_token %}
+    {{ form.body }}
+    {% for error in form.body.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <button type="submit" class="btn-primary btn-inline">Send</button>
+</form>
+
+<form method="post" action="{% url 'resolve_thread' result.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn-secondary">Mark as resolved</button>
+</form>
+{% else %}
+    <div class="banner banner-success">This thread is resolved. Post a new message to reopen it.</div>
+    <form method="post" class="form-card comment-form">
+        {% csrf_token %}
+        {{ form.body }}
+        <button type="submit" class="btn-primary btn-inline">Reopen with a message</button>
+    </form>
+{% endif %}
+
+<p class="form-footer">
+    {% if request.user.is_student %}
+        <a href="{% url 'my_results' %}">&larr; Back to my results</a>
+    {% else %}
+        <a href="{% url 'lecturer_inbox' %}">&larr; Back to inbox</a>
+    {% endif %}
+</p>
+{% endblock %}

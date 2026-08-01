@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ course.code }} — {{ course.title }}</h1>
+</div>
+<p class="subtitle">{{ course.semester }}{% if course.ca_total_weight %} · CA out of {{ course.ca_total_weight }}{% endif %}</p>
+
+<div class="card-grid">
+    <div class="action-card">
+        <h2>Roster</h2>
+        <p><a href="{% url 'roster_list' course.id %}">{{ roster_count }} student{{ roster_count|pluralize }}</a> on this course.</p>
+        <a href="{% url 'roster_template_download' %}" class="btn-secondary">Download roster template</a>
+        <a href="{% url 'roster_upload' course.id %}" class="btn-primary btn-inline">Upload roster</a>
+    </div>
+
+    <div class="action-card">
+        <h2>CA Results</h2>
+        <p>{{ batches|length }} upload{{ batches|length|pluralize }} so far.</p>
+        <a href="{% url 'result_template_download' %}" class="btn-secondary">Download results template</a>
+        <a href="{% url 'result_upload' course.id %}" class="btn-primary btn-inline">Upload results</a>
+    </div>
+</div>
+
+{% if batches %}
+<h2>Upload history</h2>
+<table class="data-table">
+    <thead><tr><th>Date</th><th>File</th><th>Accepted</th><th>Rejected</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+        {% for batch in batches %}
+        <tr>
+            <td>{{ batch.uploaded_at|date:"d M Y, H:i" }}</td>
+            <td>{{ batch.original_filename }}</td>
+            <td>{{ batch.accepted_row_count }}</td>
+            <td>{{ batch.rejected_row_count }}</td>
+            <td>{% if batch.is_active %}✅{% else %}—{% endif %}</td>
+            <td><a href="{% url 'batch_detail' course.id batch.id %}">View / Edit &rarr;</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

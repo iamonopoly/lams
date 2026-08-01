@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <div class="dash-greeting">
+        <p class="dash-greeting-eyebrow">Administrator</p>
+        <h1>Manage Accounts</h1>
+    </div>
+</div>
+
+<div class="dash-section">
+    <div class="dash-section-header"><h2>Lecturers</h2></div>
+    {% if lecturers %}
+        <table class="data-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Courses</th><th>Active</th><th colspan="2"></th></tr></thead>
+            <tbody>
+                {% for lecturer in lecturers %}
+                <tr>
+                    <td>{{ lecturer.full_name }}</td>
+                    <td>{{ lecturer.email }}</td>
+                    <td>{{ lecturer.course_count }}</td>
+                    <td>{% if lecturer.is_active %}✅{% else %}—{% endif %}</td>
+                    <td><a href="{% url 'admin_user_edit' lecturer.id %}">Edit</a></td>
+                    <td>
+                        {% if lecturer.is_superuser %}
+                            <span class="muted">Admin</span>
+                        {% else %}
+                        <form method="post" action="{% url 'admin_user_delete' lecturer.id %}"
+                              onsubmit="return confirm('Delete {{ lecturer.email }}?{% if lecturer.course_count %} This will ALSO permanently delete their {{ lecturer.course_count }} course(s), including all rosters, uploads, and results.{% endif %} This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="link-danger">Delete</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state"><p>No lecturer accounts yet.</p></div>
+    {% endif %}
+</div>
+
+<div class="dash-section">
+    <div class="dash-section-header"><h2>Students, by course</h2></div>
+
+    {% if course_groups %}
+        {% for group in course_groups %}
+        <div class="inbox-course-card">
+            <div class="inbox-course-header">
+                <h2>{{ group.course.code }} <span class="muted">— {{ group.course.title }} · {{ group.course.owner.full_name }}</span></h2>
+                <span class="inbox-course-count">{{ group.students|length }} registered</span>
+            </div>
+
+            {% if group.students %}
+                <table class="data-table">
+                    <thead><tr><th>Name</th><th>Reg No</th><th>Email</th><th>Active</th><th colspan="2"></th></tr></thead>
+                    <tbody>
+                        {% for student in group.students %}
+                        <tr>
+                            <td>{{ student.full_name }}</td>
+                            <td class="input-mono">{{ student.student_profile.reg_number }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>{% if student.is_active %}✅{% else %}—{% endif %}</td>
+                            <td><a href="{% url 'admin_user_edit' student.id %}">Edit</a></td>
+                            <td>
+                                <form method="post" action="{% url 'admin_user_delete' student.id %}"
+                                      onsubmit="return confirm('Delete {{ student.email }}? Their comment history on this and other courses will also be removed. Roster entries and published results stay intact. This cannot be undone.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="link-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="field-hint">No students on this course have registered an account yet.</p>
+            {% endif %}
+
+            {% if group.unregistered_count > 0 %}
+                <p class="field-hint">{{ group.unregistered_count }} more student{{ group.unregistered_count|pluralize }} on the roster who haven't registered an account yet.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state"><p>No courses exist yet.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load course_extras %}
+{% block title %}My Results{% endblock %}
+
+{% block content %}
+<h1>My CA Results</h1>
+
+{% if results %}
+    {% for result in results %}
+    <div class="result-card">
+        <h2>{{ result.course.code }} — {{ result.course.title }}</h2>
+        <p class="subtitle">{{ result.course.semester }}</p>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    {% for col_name, max_score in result.batch.assessment_columns %}
+                        <th>
+                            {{ col_name }}
+                            {% if max_score %}<span class="muted">/{{ max_score|floatformat:0 }}</span>
+                            {% else %}<span class="muted">(not graded yet)</span>{% endif %}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for col_name, max_score in result.batch.assessment_columns %}
+                        {% if max_score %}
+                            <td>{{ result.scores|get_item:col_name|default:"—" }}</td>
+                        {% else %}
+                            <td class="muted">—</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="result-total">
+            CA Score: <strong>{{ result.total_score }} / {{ result.max_total }}</strong>
+            ({{ result.percentage }}%)
+        </p>
+        <p class="field-hint">
+            Based on {{ result.raw_total_score }} / {{ result.raw_max_total }} raw marks
+            across the graded column(s) so far.
+        </p>
+
+        <!--{% if result.low_fill_warning %}
+            <p class="field-hint">⚠️ Fewer scores than expected are recorded for this course — check with your lecturer if this looks incomplete.</p>
+        {% endif %}-->
+
+        <p><a href="{% url 'thread_detail' result.id %}" class="btn-secondary">
+            {% if result.thread %}View comments ({{ result.thread.get_status_display }}){% else %}Ask a question about this result{% endif %}
+        </a></p>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No results have been published for you yet.</p>
+{% endif %}
+{% endblock %}

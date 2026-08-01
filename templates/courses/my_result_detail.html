@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load course_extras %}
+{% block title %}{{ result.course.code }} — My Result{% endblock %}
+
+{% block content %}
+<p class="form-footer-muted"><a href="{% url 'my_results' %}">&larr; Back to all results</a></p>
+
+<div class="dash-header">
+    <div class="dash-greeting">
+        <p class="dash-greeting-eyebrow">{{ result.course.semester }}</p>
+        <h1>{{ result.course.code }} — {{ result.course.title }}</h1>
+    </div>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <p class="stat-card-label">CA Score</p>
+        <p class="stat-card-value">{{ result.total_score }}<span class="unit">/{{ result.max_total }}</span></p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-card-label">Percentage</p>
+        <p class="stat-card-value">{{ result.percentage }}<span class="unit">%</span></p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-card-label">Raw Marks</p>
+        <p class="stat-card-value">{{ result.raw_total_score }}<span class="unit">/{{ result.raw_max_total }}</span></p>
+    </div>
+</div>
+
+{% if result.low_fill_warning %}
+    <div class="banner banner-warning">
+        ⚠️ Fewer scores than expected are recorded for this course — check with your lecturer if this looks incomplete.
+    </div>
+{% endif %}
+
+<div class="dash-section">
+    <div class="dash-section-header"><h2>Score breakdown</h2></div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                {% for col_name, max_score in result.batch.assessment_columns %}
+                    <th>
+                        {{ col_name }}
+                        {% if max_score %}<span class="muted">/{{ max_score|floatformat:0 }}</span>
+                        {% else %}<span class="muted">(not graded yet)</span>{% endif %}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for col_name, max_score in result.batch.assessment_columns %}
+                    {% if max_score %}
+                        <td>{{ result.scores|get_item:col_name|default:"—" }}</td>
+                    {% else %}
+                        <td class="muted">—</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p>
+    <a href="{% url 'thread_detail' result.id %}" class="btn-secondary">
+        {% if result.thread %}View comments ({{ result.thread.get_status_display }}){% else %}Ask a question about this result{% endif %}
+    </a>
+</p>
+{% endblock %}

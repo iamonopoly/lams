@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Roster — {{ course.code }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Roster — {{ course.code }}</h1>
+    <a href="{% url 'roster_upload' course.id %}" class="btn-primary btn-inline">Upload more</a>
+</div>
+
+{% if roster %}
+    <table class="data-table">
+        <thead><tr><th>Reg No</th><th>Name</th><th>Added</th><th colspan="2"></th></tr></thead>
+        <tbody>
+            {% for entry in roster %}
+            <tr>
+                <td>{{ entry.reg_number }}</td>
+                <td>{{ entry.name }}</td>
+                <td>{{ entry.added_at|date:"d M Y" }}</td>
+                <td><a href="{% url 'roster_edit' course.id entry.id %}">Edit</a></td>
+                <td>
+                    <form method="post" action="{% url 'roster_delete' course.id entry.id %}"
+                          onsubmit="return confirm('Remove {{ entry.reg_number }} from this roster? This does not delete their account or past results.');">
+                        {% csrf_token %}
+                        <button type="submit" class="link-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No students on this roster yet.</p>
+{% endif %}
+
+<p><a href="{% url 'course_detail' course.id %}">&larr; Back to course</a></p>
+{% endblock %}

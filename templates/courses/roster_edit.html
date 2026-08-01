@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Edit Roster Entry{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Edit Roster Entry</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn-primary">Save changes</button>
+    </form>
+    <p class="form-footer"><a href="{% url 'roster_list' course.id %}">&larr; Back to roster</a></p>
+</div>
+{% endblock %}

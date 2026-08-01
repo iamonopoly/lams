@@ -1,0 +1,9 @@
+Hi {{ user.full_name }},
+
+Your student account on the CA Result Verification Portal is ready for the
+final step. Click the link below to set your password:
+
+{{ activation_url }}
+
+This link can only be used once and will expire after use. If you didn't
+request this, you can safely ignore this email.

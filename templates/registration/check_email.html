@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Check your email{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Check your email</h1>
+    <p>
+        We've sent you a link to finish setting up your account.
+        If you don't see it, check your spam folder.
+    </p>
+    <p class="form-footer">
+        <!--<a href="{% url 'login' %}">Back to login</a>-->
+        <a href="{% url 'landing' %}">Back to login</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load course_extras %}
+{% block title %}Upload — {{ course.code }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ course.code }} — Upload from {{ batch.uploaded_at|date:"d M Y, H:i" }}</h1>
+</div>
+<p class="subtitle">
+    {{ batch.original_filename }} ·
+    {% if batch.is_active %}
+        <span class="status-pill status-resolved">Active — students see this</span>
+    {% else %}
+        <span class="status-pill status-open">Inactive — older version</span>
+    {% endif %}
+</p>
+
+<div class="action-row">
+    {% if not batch.is_active %}
+    <form method="post" action="{% url 'batch_activate' course.id batch.id %}"
+          onsubmit="return confirm('Make this the active result set students see? This will deactivate the current active upload (it is not deleted).');">
+        {% csrf_token %}
+        <button type="submit" class="btn-secondary">Make this the active upload</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'batch_delete' course.id batch.id %}"
+          onsubmit="return confirm('Delete this ENTIRE upload and all {{ results|length }} result(s) in it? This cannot be undone.');">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Delete this whole upload</button>
+    </form>
+</div>
+
+{% if results %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Reg No</th>
+                <th>Name</th>
+                {% for col_name, max_score in batch.assessment_columns %}
+                    <th>{{ col_name }}{% if max_score %} <span class="muted">/{{ max_score|floatformat:0 }}</span>{% endif %}</th>
+                {% endfor %}
+                <th>CA Score</th>
+                <th colspan="2"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result.reg_number }}</td>
+                <td>{{ result.name }}</td>
+                {% for col_name, max_score in batch.assessment_columns %}
+                    <td>{% if max_score %}{{ result.scores|get_item:col_name|default:"—" }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                {% endfor %}
+                <td><strong>{{ result.total_score }}/{{ result.max_total }}</strong></td>
+                <td><a href="{% url 'result_edit' course.id batch.id result.id %}">Edit</a></td>
+                <td>
+                    <form method="post" action="{% url 'result_delete' course.id batch.id result.id %}"
+                          onsubmit="return confirm('Remove {{ result.reg_number }} from this upload?');">
+                        {% csrf_token %}
+                        <button type="submit" class="link-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No results in this upload.</p>
+{% endif %}
+
+<p><a href="{% url 'course_detail' course.id %}">&larr; Back to course</a></p>
+{% endblock %}

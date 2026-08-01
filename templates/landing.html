@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}CA Result Verification Portal{% endblock %}
+
+{% block content %}
+<div class="landing-hero">
+    <p class="landing-eyebrow">ecturer Assessment Management System (LAMS)</p>
+    <h1>Two sides of the same register.</h1>
+    <p class="landing-sub">Choose how you're signing in — students and lecturers each get their own page.</p>
+</div>
+
+<div class="role-grid">
+    <a href="{% url 'student_login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}"
+       class="role-card role-card--student">
+        <span class="role-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3L1 8l11 5 9-4.09V17h2V8L12 3z" fill="currentColor"/>
+                <path d="M5 13.18v3.64C5 19.11 8.13 21 12 21s7-1.89 7-4.18v-3.64L12 16l-7-2.82z" fill="currentColor" opacity="0.55"/>
+            </svg>
+        </span>
+        <h2>I'm a Student</h2>
+        <p>Check your CA results and message your lecturer about them.</p>
+        <span class="role-card-cta">Continue as student &rarr;</span>
+    </a>
+
+    <a href="{% url 'lecturer_login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}"
+       class="role-card role-card--lecturer">
+        <span class="role-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="3" width="16" height="18" rx="1.5" fill="currentColor" opacity="0.15"/>
+                <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M15.5 15.5l1.8 1.8 3-3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+        <h2>I'm a Lecturer</h2>
+        <p>Manage rosters, upload CA scores, and respond to students.</p>
+        <span class="role-card-cta">Continue as lecturer &rarr;</span>
+    </a>
+</div>
+{% endblock %}

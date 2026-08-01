@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Courses{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>My Courses</h1>
+    <a href="{% url 'course_create' %}" class="btn-primary btn-inline">+ New Course</a>
+</div>
+
+{% if courses %}
+    <table class="data-table">
+        <thead>
+            <tr><th>Code</th><th>Title</th><th>Semester</th><th>Roster</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+            <tr>
+                <td>{{ course.code }}</td>
+                <td>{{ course.title }}</td>
+                <td>{{ course.semester }}</td>
+                <td>{{ course.roster.count }}</td>
+                <td><a href="{% url 'course_detail' course.id %}">Manage &rarr;</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>You haven't created any courses yet.</p>
+{% endif %}
+{% endblock %}

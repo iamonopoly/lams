@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Edit Result{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Edit Result</h1>
+    <p class="subtitle">{{ result.reg_number }} — {{ result.name }} ({{ course.code }})</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                <p class="field-hint">Leave blank if this component wasn't graded for this student.</p>
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn-primary">Save changes</button>
+    </form>
+    <p class="form-footer"><a href="{% url 'batch_detail' course.id batch.id %}">&larr; Back to upload</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CA Result Verification System{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="{% if request.user.is_authenticated %}has-sidebar role-shell--{{ request.user.role|lower }}{% endif %}">
+
+{% if request.user.is_authenticated %}
+<aside class="app-sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span class="sidebar-brand-mark">CA</span>
+        <span class="sidebar-brand-text">Result Portal</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        {% if request.user.is_student %}
+            <a href="{% url 'student_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_dashboard' %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.3" fill="currentColor" opacity="0.55"/><rect x="11" y="3" width="6" height="6" rx="1.3" fill="currentColor"/><rect x="3" y="11" width="6" height="6" rx="1.3" fill="currentColor"/><rect x="11" y="11" width="6" height="6" rx="1.3" fill="currentColor" opacity="0.55"/></svg>
+                </span>
+                Dashboard
+            </a>
+            <a href="{% url 'my_results' %}" class="sidebar-link {% if 'my-results' in request.path %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M4 3h9l3 3v11a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/><path d="M7 10.5l2 2 4-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                My Results
+            </a>
+        {% else %}
+            <a href="{% url 'lecturer_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'lecturer_dashboard' %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.3" fill="currentColor" opacity="0.55"/><rect x="11" y="3" width="6" height="6" rx="1.3" fill="currentColor"/><rect x="3" y="11" width="6" height="6" rx="1.3" fill="currentColor"/><rect x="11" y="11" width="6" height="6" rx="1.3" fill="currentColor" opacity="0.55"/></svg>
+                </span>
+                Dashboard
+            </a>
+            <a href="{% url 'course_list' %}" class="sidebar-link {% if '/courses/' in request.path %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5A1.5 1.5 0 014.5 4H9v12H4.5A1.5 1.5 0 013 14.5v-9z" fill="currentColor" opacity="0.55"/><path d="M17 5.5A1.5 1.5 0 0015.5 4H11v12h4.5a1.5 1.5 0 001.5-1.5v-9z" fill="currentColor"/></svg>
+                </span>
+                Courses
+            </a>
+            <a href="{% url 'lecturer_inbox' %}" class="sidebar-link {% if 'inbox' in request.path %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M3 6l7 5 7-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="4.5" width="14" height="11" rx="1.3" stroke="currentColor" stroke-width="1.4"/></svg>
+                </span>
+                Comment Inbox
+            </a>
+        {% endif %}
+
+        {% if request.user.is_superuser %}
+            <p class="sidebar-section-label">Administrator</p>
+            <a href="{% url 'admin_user_list' %}" class="sidebar-link sidebar-link--admin {% if 'admin-panel' in request.path %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M4 17c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </span>
+                Manage Accounts
+            </a>
+        {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-chip">
+            <span class="user-chip-avatar">{{ request.user.full_name|slice:":1" }}</span>
+            <span class="user-chip-info">
+                <span class="user-chip-name">{{ request.user.full_name }}</span>
+                <span class="user-chip-role">{{ request.user.get_role_display }}</span>
+            </span>
+        </div>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="sidebar-logout">Log out</button>
+        </form>
+    </div>
+</aside>
+{% else %}
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="{% url 'landing' %}" class="brand">LAMS<!--CA Result Portal--></a>
+        <nav class="nav-links">
+            <!--<a href="{% url 'landing' %}">Log in</a>-->
+        </nav>
+    </div>
+</header>
+{% endif %}
+
+<div class="app-main">
+    <main class="container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+</div>
+
+{% if not request.user.is_authenticated %}
+<footer class="site-footer">
+    <div class="container">
+        <p>&copy; {% now "Y" %} CA Result Verification System</p>
+    </div>
+</footer>
+{% endif %}
+
+
+
+{% if request.user.is_authenticated %}
+<div id="idle-toast" class="idle-toast" hidden>
+    <div class="idle-toast-icon">⏱</div>
+    <div class="idle-toast-body">
+        <p class="idle-toast-title">Still there?</p>
+        <p class="idle-toast-message">
+            You've been idle a while — you'll be signed out in
+            <span id="idle-countdown">2:00</span> due to inactivity.
+        </p>
+    </div>
+    <div class="idle-toast-actions">
+        <button type="button" id="idle-stay-btn" class="idle-stay-btn">Stay signed in</button>
+        <button type="button" id="idle-logout-btn" class="idle-logout-btn">Log out now</button>
+    </div>
+</div>
+
+<form id="idle-logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
+    {% csrf_token %}
+</form>
+
+<script>
+(function () {
+    var TOTAL_MS = {{ SESSION_TIMEOUT_MS }};
+    var WARNING_LEAD_MS = Math.min(2 * 60 * 1000, TOTAL_MS); // show 2 min before expiry (or immediately if the timeout itself is under 2 min)
+    var WARNING_AT_MS = TOTAL_MS - WARNING_LEAD_MS;
+
+    var lastActivity = Date.now();
+    var warningShown = false;
+
+    var toast = document.getElementById('idle-toast');
+    var countdownEl = document.getElementById('idle-countdown');
+    var stayBtn = document.getElementById('idle-stay-btn');
+    var logoutBtn = document.getElementById('idle-logout-btn');
+    var logoutForm = document.getElementById('idle-logout-form');
+
+    function resetActivity() {
+        if (warningShown) { return; }
+        lastActivity = Date.now();
+    }
+
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(function (evt) {
+        window.addEventListener(evt, resetActivity, { passive: true });
+    });
+
+    function showWarning() {
+        warningShown = true;
+        toast.hidden = false;
+    }
+
+    function hideWarning() {
+        warningShown = false;
+        toast.hidden = true;
+    }
+
+    function doLogout() {
+        logoutForm.submit();
+    }
+
+    function formatCountdown(ms) {
+        var totalSeconds = Math.max(Math.ceil(ms / 1000), 0);
+        var m = Math.floor(totalSeconds / 60);
+        var s = totalSeconds % 60;
+        return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    stayBtn.addEventListener('click', function () {
+        fetch("{% url 'session_keepalive' %}", { credentials: 'same-origin' })
+            .then(function (res) {
+                if (!res.ok) { throw new Error('session no longer valid'); }
+                lastActivity = Date.now();
+                hideWarning();
+            })
+            .catch(function () {
+                doLogout();
+            });
+    });
+
+    logoutBtn.addEventListener('click', doLogout);
+
+    setInterval(function () {
+        var idleFor = Date.now() - lastActivity;
+
+        if (idleFor >= TOTAL_MS) {
+            doLogout();
+            return;
+        }
+
+        if (idleFor >= WARNING_AT_MS) {
+            if (!warningShown) { showWarning(); }
+            countdownEl.textContent = formatCountdown(TOTAL_MS - idleFor);
+        }
+    }, 1000);
+})();
+</script>
+{% endif %}
+</body>
+</html>

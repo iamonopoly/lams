@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Comment Inbox{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <div class="dash-greeting">
+        <p class="dash-greeting-eyebrow">All courses</p>
+        <h1>Comment Inbox</h1>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <a href="{% url 'lecturer_inbox' %}" class="{% if not status_filter %}filter-active{% endif %}">All</a>
+    {% for value, label in statuses %}
+        <a href="?status={{ value }}" class="{% if status_filter == value %}filter-active{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+{% if course_summaries %}
+    <div class="inbox-card-grid">
+        {% for item in course_summaries %}
+        <a href="{% url 'course_inbox' item.course.id %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="inbox-summary-card">
+            <div class="inbox-summary-top">
+                <p class="inbox-summary-code">{{ item.course.code }}</p>
+                <span class="inbox-summary-count">{{ item.thread_count }}</span>
+            </div>
+            <p class="inbox-summary-title">{{ item.course.title }}</p>
+            <p class="inbox-summary-meta">{{ item.thread_count }} student{{ item.thread_count|pluralize }} commented</p>
+            <span class="inbox-summary-cta">View students &rarr;</span>
+        </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>No comments {% if status_filter %}with this status{% endif %} yet.</p>
+    </div>
+{% endif %}
+{% endblock %}

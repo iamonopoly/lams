@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }} — Comments{% endblock %}
+
+{% block content %}
+<p class="form-footer-muted"><a href="{% url 'lecturer_inbox' %}">&larr; Back to inbox</a></p>
+
+<div class="dash-header">
+    <div class="dash-greeting">
+        <p class="dash-greeting-eyebrow">{{ course.semester }}</p>
+        <h1>{{ course.code }} — {{ course.title }}</h1>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <a href="{% url 'course_inbox' course.id %}" class="{% if not status_filter %}filter-active{% endif %}">All</a>
+    {% for value, label in statuses %}
+        <a href="?status={{ value }}" class="{% if status_filter == value %}filter-active{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+{% if threads %}
+    <table class="data-table">
+        <thead><tr><th>Student</th><th>Reg No</th><th>Status</th><th>Last activity</th><th></th></tr></thead>
+        <tbody>
+            {% for thread in threads %}
+            <tr>
+                <td>{{ thread.result.name }}</td>
+                <td class="input-mono">{{ thread.result.reg_number }}</td>
+                <td><span class="status-pill status-{{ thread.status|lower }}">{{ thread.get_status_display }}</span></td>
+                <td>{{ thread.updated_at|date:"d M Y, H:i" }}</td>
+                <td><a href="{% url 'thread_detail' thread.result.id %}">Open &rarr;</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <p>No students have commented on this course {% if status_filter %}with this status{% endif %} yet.</p>
+    </div>
+{% endif %}
+{% endblock %}

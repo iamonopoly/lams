@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ role_label|default:"" }} Login{% endblock %}
+
+{% block content %}
+<div class="form-card role-theme--{{ role }}">
+    <p class="role-eyebrow">{{ role_label }} sign-in</p>
+    <h1>
+        {% if role == "lecturer" %}Welcome back{% else %}Check your results{% endif %}
+    </h1>
+    <p class="subtitle">
+        {% if role == "lecturer" %}
+            Sign in to manage your courses, rosters, and CA uploads.
+        {% else %}
+            Log in with your registration number to see your CA scores.
+        {% endif %}
+    </p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <p class="field-error">{{ form.non_field_errors|join:", " }}</p>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-role">Log in</button>
+    </form>
+
+    <p class="form-footer">
+        {% if role == "lecturer" %}
+            New lecturer? <a href="{% url 'lecturer_register' %}">Register here</a>
+        {% else %}
+            New student? <a href="{% url 'student_register' %}">Register here</a>
+        {% endif %}
+    </p>
+    <p class="form-footer form-footer-muted">
+        <a href="{% url 'landing' %}">&larr; Not a {{ role }}? Choose your role</a>
+    </p>
+</div>
+{% endblock %}

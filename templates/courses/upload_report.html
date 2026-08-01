@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Upload Report{% endblock %}
+
+{% block content %}
+<h1>Upload Report — {{ course.code }}</h1>
+
+{% if file_rejected %}
+    <div class="banner banner-error">
+        <strong>The whole file was rejected.</strong>
+        <ul>
+            {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+    </div>
+{% else %}
+    <div class="banner banner-success">
+        <strong>{{ accepted_count }} row{{ accepted_count|pluralize }} saved successfully.</strong>
+        {% if upload_type == "results" %}This is now the active result set students will see.{% endif %}
+    </div>
+
+    {% if scaling_info %}
+        <div class="banner banner-info">{{ scaling_info }}</div>
+    {% endif %}
+
+    {% if errors %}
+        <div class="banner banner-warning">
+            <strong>{{ errors|length }} row{{ errors|length|pluralize }} skipped:</strong>
+            <ul>
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endif %}
+
+<p><a href="{% url 'course_detail' course.id %}">&larr; Back to course</a></p>
+{% endblock %}

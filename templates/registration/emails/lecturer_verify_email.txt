@@ -1,0 +1,9 @@
+Hi {{ user.full_name }},
+
+Thanks for registering as a lecturer on the CA Result Verification Portal.
+Please verify your email address by clicking the link below:
+
+{{ activation_url }}
+
+This link can only be used once. If you didn't request this, you can
+safely ignore this email.
