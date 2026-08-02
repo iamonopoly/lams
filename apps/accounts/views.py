@@ -114,6 +114,13 @@ def activate_lecturer(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save(update_fields=["is_active"])
+        # Explicit backend needed: this user came straight from the ORM,
+        # not through authenticate(), so Django doesn't know which of the
+        # two configured AUTHENTICATION_BACKENDS to credit the login to.
+        # ModelBackend is correct here regardless of role — it's the
+        # generic "this Django user is valid" backend; the custom
+        # reg-number backend only matters at the login FORM stage.
+        user.backend = "django.contrib.auth.backends.ModelBackend"
         auth_login(request, user)
         messages.success(request, "Your account is verified. Welcome!")
         return redirect("dashboard")
@@ -143,6 +150,7 @@ def student_set_password(request, uidb64, token):
             form.save()  # sets the password
             user.is_active = True
             user.save(update_fields=["is_active"])
+            user.backend = "django.contrib.auth.backends.ModelBackend"
             auth_login(request, user)
             messages.success(request, "Password set. Welcome!")
             return redirect("dashboard")

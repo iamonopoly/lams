@@ -82,9 +82,9 @@
 {% else %}
 <header class="site-header">
     <div class="container header-inner">
-        <a href="{% url 'student_login' %}" class="brand">LAMS</a>
+        <a href="{% url 'student_login' %}" class="brand">CA Result Portal</a>
         <nav class="nav-links">
-            <!--<a href="{% url 'student_login' %}">Log in</a>-->
+            <a href="{% url 'student_login' %}">Log in</a>
         </nav>
     </div>
 </header>
@@ -113,8 +113,6 @@
 </footer>
 {% endif %}
 
-
-
 {% if request.user.is_authenticated %}
 <div id="idle-toast" class="idle-toast" hidden>
     <div class="idle-toast-icon">⏱</div>
@@ -138,7 +136,7 @@
 <script>
 (function () {
     var TOTAL_MS = {{ SESSION_TIMEOUT_MS }};
-    var WARNING_LEAD_MS = Math.min(2 * 60 * 1000, TOTAL_MS); // show 2 min before expiry (or immediately if the timeout itself is under 2 min)
+    var WARNING_LEAD_MS = Math.min(2 * 60 * 1000, TOTAL_MS);
     var WARNING_AT_MS = TOTAL_MS - WARNING_LEAD_MS;
 
     var lastActivity = Date.now();
@@ -210,5 +208,6 @@
 })();
 </script>
 {% endif %}
+
 </body>
 </html>
