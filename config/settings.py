@@ -94,9 +94,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Auth redirects ────────────────────────────────────────────────────────
-LOGIN_URL = "landing"
+LOGIN_URL = "student_login"
 LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "landing"
+LOGOUT_REDIRECT_URL = "student_login"
 
 # ── Email ────────────────────────────────────────────────────────────────
 # Console backend for development: activation/password-setup links print

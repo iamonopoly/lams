@@ -42,8 +42,14 @@
             New student? <a href="{% url 'student_register' %}">Register here</a>
         {% endif %}
     </p>
+
+    <!--
     <p class="form-footer form-footer-muted">
-        <a href="{% url 'landing' %}">&larr; Not a {{ role }}? Choose your role</a>
-    </p>
+        {% if role == "lecturer" %}
+            <a href="{% url 'student_login' %}">&larr; Not a lecturer? Student login</a>
+        {% else %}
+            <a href="{% url 'lecturer_login' %}">&larr; Not a student? Lecturer login</a>
+        {% endif %}
+    </p>-->
 </div>
 {% endblock %}

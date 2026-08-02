@@ -276,14 +276,19 @@ class LecturerLoginView(RoleLoginView):
     }
 
 
-def landing(request):
-    """Role picker — the front door. Preserves ?next= so a link to a
-    protected page still lands the person where they meant to go after
-    they pick a role and log in."""
-    if request.user.is_authenticated:
-        return redirect("dashboard")
-    return render(request, "landing.html")
-
+def dashboard_redirect(request):
+    """Single named URL ('dashboard') that LOGIN_REDIRECT_URL points to.
+    Sends the user to the correct role-specific dashboard so templates and
+    other views never need an if/else on role just to build a link."""
+    if not request.user.is_authenticated:
+        # Root ("/") is the student login now that student/lecturer no
+        # longer share one gateway page — used as the sane generic
+        # fallback here since this view doesn't know which role someone
+        # was trying to reach.
+        return redirect("student_login")
+    if request.user.is_student:
+        return redirect("student_dashboard")
+    return redirect("lecturer_dashboard")
 
 # ── Admin panel (superuser only) ─────────────────────────────────────────
 
