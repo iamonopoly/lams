@@ -82,9 +82,9 @@
 {% else %}
 <header class="site-header">
     <div class="container header-inner">
-        <a href="{% url 'student_login' %}" class="brand">CA Result Portal</a>
+        <a href="{% url 'student_login' %}" class="brand">LAMS</a>
         <nav class="nav-links">
-            <a href="{% url 'student_login' %}">Log in</a>
+            <!--<a href="{% url 'student_login' %}">Log in</a>-->
         </nav>
     </div>
 </header>
@@ -208,6 +208,60 @@
 })();
 </script>
 {% endif %}
+
+<script>
+(function () {
+    var EYE_OPEN = '<svg viewBox="0 0 20 20" fill="none"><path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.4"/></svg>';
+    var EYE_CLOSED = '<svg viewBox="0 0 20 20" fill="none"><path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 3l14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+
+    function enhance(input) {
+        if (input.dataset.toggleWrapped) { return; }
+        input.dataset.toggleWrapped = 'true';
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'password-field-wrapper';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'password-toggle-btn';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.innerHTML = EYE_OPEN;
+        wrapper.appendChild(btn);
+
+        btn.addEventListener('click', function () {
+            var willShow = input.type === 'password';
+            input.type = willShow ? 'text' : 'password';
+            btn.innerHTML = willShow ? EYE_CLOSED : EYE_OPEN;
+            btn.setAttribute('aria-label', willShow ? 'Hide password' : 'Show password');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[type="password"]').forEach(enhance);
+    });
+})();
+</script>
+
+<script>
+(function () {
+    // Wraps every data table in a horizontally-scrollable container so a
+    // wide table (many assessment columns, etc.) scrolls within itself
+    // on a narrow phone screen instead of breaking the whole page's
+    // layout or squashing illegibly.
+    function wrapTables() {
+        document.querySelectorAll('.data-table').forEach(function (table) {
+            if (table.closest('.table-scroll')) { return; }
+            var wrapper = document.createElement('div');
+            wrapper.className = 'table-scroll';
+            table.parentNode.insertBefore(wrapper, table);
+            wrapper.appendChild(table);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', wrapTables);
+})();
+</script>
 
 </body>
 </html>
