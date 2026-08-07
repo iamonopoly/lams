@@ -72,6 +72,37 @@ def workbook_to_bytes(wb):
     buffer.seek(0)
     return buffer
 
+def generate_batch_export(batch):
+    """
+    Regenerates an .xlsx from the CURRENT database state of an upload
+    batch — same 3-row structure as the original upload (headers, max
+    scores, data), so this reflects any edits/additions made since the
+    original upload rather than the stale original file (which is never
+    stored — only parsed and discarded). As a bonus, since it matches
+    the exact upload format, this file could be re-uploaded as-is.
+    """
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Results"
+
+    assessment_columns = batch.assessment_columns  # list of [name, max_or_None]
+    ws.append(["Reg No", "Name"] + [name for name, _ in assessment_columns])
+    ws.append(["", ""] + [
+        max_score if max_score is not None else "" for _, max_score in assessment_columns
+    ])
+
+    for result in batch.results.order_by("reg_number"):
+        row = [result.reg_number, result.name]
+        for col_name, max_score in assessment_columns:
+            if max_score is None:
+                row.append("")
+            else:
+                score = result.scores.get(col_name)
+                row.append(score if score is not None else "")
+        ws.append(row)
+
+    return wb
+
 
 # ── Roster parsing ───────────────────────────────────────────────────────
 

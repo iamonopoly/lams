@@ -13,6 +13,7 @@
         <p><a href="{% url 'roster_list' course.id %}">{{ roster_count }} student{{ roster_count|pluralize }}</a> on this course.</p>
         <a href="{% url 'roster_template_download' %}" class="btn-secondary">Download roster template</a>
         <a href="{% url 'roster_upload' course.id %}" class="btn-primary btn-inline">Upload roster</a>
+        <a href="{% url 'roster_quick_add' course.id %}" class="btn-secondary">+ Add one student</a>
     </div>
 
     <div class="action-card">

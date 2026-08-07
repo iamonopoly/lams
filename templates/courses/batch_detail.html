@@ -16,6 +16,7 @@
 </p>
 
 <div class="action-row">
+    <a href="{% url 'download_batch_excel' course.id batch.id %}" class="btn-secondary">Download as Excel</a>
     {% if not batch.is_active %}
     <form method="post" action="{% url 'batch_activate' course.id batch.id %}"
           onsubmit="return confirm('Make this the active result set students see? This will deactivate the current active upload (it is not deleted).');">

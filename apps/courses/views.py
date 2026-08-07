@@ -13,6 +13,8 @@ from . import excel_utils
 from .forms import CourseForm, ExcelUploadForm, ResultEditForm, RosterEditForm
 from .models import Course, CourseRoster, Result, UploadBatch
 
+from .forms import CourseForm, ExcelUploadForm, QuickAddStudentForm, ResultEditForm, RosterEditForm
+
 
 def _get_owned_course_or_403(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
@@ -298,6 +300,111 @@ def roster_delete(request, course_id, roster_id):
 
     return redirect("roster_list", course_id=course.id)
 
+@role_required(User.Role.LECTURER)
+def roster_quick_add(request, course_id):
+    """Add ONE student directly to the roster — for a stray student who
+    was missed off the Excel upload, without needing a whole new sheet."""
+    course = _get_owned_course_or_403(request, course_id)
+
+    if request.method == "POST":
+        form = QuickAddStudentForm(request.POST, course=course)
+        if form.is_valid():
+            reg_number = form.cleaned_data["reg_number"]
+            name = form.cleaned_data["name"]
+            CourseRoster.objects.create(course=course, reg_number=reg_number, name=name)
+            PreRegisteredStudent.objects.update_or_create(
+                reg_number=reg_number, defaults={"full_name": name}
+            )
+            messages.success(request, f"Added {reg_number} to the roster.")
+            return redirect("roster_list", course_id=course.id)
+    else:
+        form = QuickAddStudentForm(course=course)
+
+    return render(
+        request, "courses/roster_quick_add.html", {"course": course, "form": form}
+    )
+
+
+@role_required(User.Role.LECTURER)
+def result_quick_add(request, course_id, roster_id):
+    """
+    Add a CA result for one student who's on the roster but missing from
+    the active upload's results — reuses that upload's exact assessment
+    columns/max-scores so the manually-entered score is scaled and
+    validated exactly the same way the Excel upload would.
+    """
+    course = _get_owned_course_or_403(request, course_id)
+    roster_entry = get_object_or_404(CourseRoster, pk=roster_id, course=course)
+    active_batch = course.upload_batches.filter(is_active=True).first()
+
+    if active_batch is None:
+        messages.error(
+            request,
+            "Upload a results sheet first — assessment columns need to "
+            "exist before an individual result can be added.",
+        )
+        return redirect("roster_list", course_id=course.id)
+
+    if Result.objects.filter(batch=active_batch, reg_number=roster_entry.reg_number).exists():
+        messages.info(
+            request,
+            f"{roster_entry.reg_number} already has a result in the active "
+            f"upload — edit it from there instead.",
+        )
+        return redirect("batch_detail", course_id=course.id, batch_id=active_batch.id)
+
+    active_columns = [(n, m) for n, m in active_batch.assessment_columns if m is not None]
+    ca_total = (
+        float(course.ca_total_weight) if course.ca_total_weight else excel_utils.DEFAULT_CA_TOTAL
+    )
+
+    if request.method == "POST":
+        form = ResultEditForm(request.POST, active_columns=active_columns)
+        if form.is_valid():
+            scores = {name: None for name, _ in active_batch.assessment_columns}
+            raw_total = Decimal("0")
+            filled_count = 0
+
+            for idx, (col_name, max_score) in enumerate(active_columns):
+                value = form.cleaned_data[f"score_{idx}"]
+                if value is not None:
+                    scores[col_name] = float(value)
+                    raw_total += value
+                    filled_count += 1
+
+            raw_max = sum(Decimal(str(m)) for _, m in active_columns)
+            total_score = (
+                round(float(raw_total) / float(raw_max) * ca_total, 1) if raw_max else 0
+            )
+            low_fill_threshold = min(3, len(active_columns))
+            low_fill_warning = filled_count < low_fill_threshold
+
+            Result.objects.create(
+                batch=active_batch,
+                course=course,
+                reg_number=roster_entry.reg_number,
+                name=roster_entry.name,
+                scores=scores,
+                raw_total_score=raw_total,
+                raw_max_total=raw_max,
+                total_score=total_score,
+                max_total=ca_total,
+                low_fill_warning=low_fill_warning,
+            )
+            active_batch.accepted_row_count = active_batch.results.count()
+            active_batch.save(update_fields=["accepted_row_count"])
+
+            messages.success(request, f"Added a result for {roster_entry.reg_number}.")
+            return redirect("batch_detail", course_id=course.id, batch_id=active_batch.id)
+    else:
+        form = ResultEditForm(active_columns=active_columns)
+
+    return render(
+        request,
+        "courses/result_quick_add.html",
+        {"course": course, "roster_entry": roster_entry, "batch": active_batch, "form": form},
+    )
+
 
 # ── Upload batches: view / activate / delete ─────────────────────────────
 
@@ -311,6 +418,27 @@ def batch_detail(request, course_id, batch_id):
         "courses/batch_detail.html",
         {"course": course, "batch": batch, "results": results},
     )
+
+@role_required(User.Role.LECTURER)
+def download_batch_excel(request, course_id, batch_id):
+    """Re-download this upload as an .xlsx — regenerated from the current
+    database state (so any edits/additions since the original upload are
+    included), not the original file (which was never stored)."""
+    course = _get_owned_course_or_403(request, course_id)
+    batch = get_object_or_404(UploadBatch, pk=batch_id, course=course)
+
+    wb = excel_utils.generate_batch_export(batch)
+    buffer = excel_utils.workbook_to_bytes(wb)
+
+    filename = f"{course.code}_results_{batch.uploaded_at:%Y%m%d_%H%M}.xlsx"
+    response = FileResponse(
+        buffer,
+        as_attachment=True,
+        filename=filename,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    return response
+
 
 
 @role_required(User.Role.LECTURER)

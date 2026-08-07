@@ -1,4 +1,3 @@
-from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from . import views
@@ -20,7 +19,7 @@ urlpatterns = [
         views.student_set_password,
         name="student_set_password",
     ),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("logout/", views.logout_view, name="logout"),
     path("dashboard/", views.dashboard_redirect, name="dashboard"),
     path("dashboard/student/", views.student_dashboard, name="student_dashboard"),
     path("dashboard/lecturer/", views.lecturer_dashboard, name="lecturer_dashboard"),

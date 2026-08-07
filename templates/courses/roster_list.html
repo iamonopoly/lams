@@ -4,12 +4,15 @@
 {% block content %}
 <div class="page-header">
     <h1>Roster — {{ course.code }}</h1>
-    <a href="{% url 'roster_upload' course.id %}" class="btn-primary btn-inline">Upload more</a>
+    <div class="action-row">
+        <a href="{% url 'roster_quick_add' course.id %}" class="btn-secondary">+ Add one student</a>
+        <a href="{% url 'roster_upload' course.id %}" class="btn-primary btn-inline">Upload more</a>
+    </div>
 </div>
 
 {% if roster %}
     <table class="data-table">
-        <thead><tr><th>Reg No</th><th>Name</th><th>Added</th><th colspan="2"></th></tr></thead>
+        <thead><tr><th>Reg No</th><th>Name</th><th>Added</th><th colspan="3"></th></tr></thead>
         <tbody>
             {% for entry in roster %}
             <tr>
@@ -17,6 +20,7 @@
                 <td>{{ entry.name }}</td>
                 <td>{{ entry.added_at|date:"d M Y" }}</td>
                 <td><a href="{% url 'roster_edit' course.id entry.id %}">Edit</a></td>
+                <td><a href="{% url 'result_quick_add' course.id entry.id %}">Add result</a></td>
                 <td>
                     <form method="post" action="{% url 'roster_delete' course.id entry.id %}"
                           onsubmit="return confirm('Remove {{ entry.reg_number }} from this roster? This does not delete their account or past results.');">

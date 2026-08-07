@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Add Student{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Add a Student</h1>
+    <p class="subtitle">{{ course.code }} — for a student who was missed off the Excel upload.</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <p class="field-error">{{ form.non_field_errors|join:", " }}</p>
+        {% endif %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn-role">Add to roster</button>
+    </form>
+
+    <p class="form-footer"><a href="{% url 'roster_list' course.id %}">&larr; Back to roster</a></p>
+</div>
+{% endblock %}

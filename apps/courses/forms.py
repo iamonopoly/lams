@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 
 from .models import Course, CourseRoster
 
+from apps.accounts.models import reg_number_validator
+
 
 class CourseForm(forms.ModelForm):
     class Meta:
@@ -87,3 +89,28 @@ class ResultEditForm(forms.Form):
                 max_digits=6,
                 decimal_places=2,
             )
+
+class QuickAddStudentForm(forms.Form):
+    """For adding ONE student directly to a course roster — the manual
+    alternative to an Excel upload, for a stray student who was missed."""
+
+    reg_number = forms.CharField(
+        label="Registration Number",
+        max_length=20,
+        widget=forms.TextInput(attrs={"placeholder": "PS/CSC/22/0001", "class": "input-mono"}),
+    )
+    name = forms.CharField(label="Full name", max_length=150)
+
+    def __init__(self, *args, course=None, **kwargs):
+        self.course = course
+        super().__init__(*args, **kwargs)
+
+    def clean_reg_number(self):
+        reg_number = self.cleaned_data["reg_number"].strip().upper()
+        reg_number_validator(reg_number)
+        if CourseRoster.objects.filter(course=self.course, reg_number=reg_number).exists():
+            raise ValidationError("This registration number is already on the roster.")
+        return reg_number
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()

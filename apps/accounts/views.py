@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.core.mail import send_mail
@@ -8,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
+from django.views.decorators.http import require_POST
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 from .decorators import role_required, superuser_required
@@ -65,10 +67,12 @@ def student_register(request):
                 subject="Set up your CA Result Portal password",
                 template_name="registration/emails/student_setup_email.txt",
             )
-            return redirect("check_email")
+            return redirect(f"{reverse('check_email')}?role=student")
+            #return redirect("check_email")
     else:
         form = StudentRegistrationForm()
-
+        
+    
     return render(request, "registration/student_register.html", {"form": form})
 
 
@@ -91,15 +95,23 @@ def lecturer_register(request):
                 subject="Verify your CA Result Portal lecturer account",
                 template_name="registration/emails/lecturer_verify_email.txt",
             )
-            return redirect("check_email")
+            #return redirect("check_email")
+            return redirect(f"{reverse('check_email')}?role=lecturer")
     else:
         form = LecturerRegistrationForm()
 
+    
     return render(request, "registration/lecturer_register.html", {"form": form})
 
 
 def check_email(request):
-    return render(request, "registration/check_email.html")
+    # check_email is one shared URL for both roles (both registration
+    # views redirect here), so the role has to be carried explicitly via
+    # ?role= rather than inferred from the path — used only to pick the
+    # correct "back to login" link, defaults safely to student.
+    role = request.GET.get("role")
+    role = "lecturer" if role == "lecturer" else "student"
+    return render(request, "registration/check_email.html", {"role": role})
 
 
 def activate_lecturer(request, uidb64, token):
@@ -382,3 +394,21 @@ def session_keepalive(request):
     instead of here, which the frontend treats as "already logged out."
     """
     return JsonResponse({"ok": True})
+
+
+@require_POST
+def logout_view(request):
+    """
+    Replaces Django's built-in LogoutView, which only supports ONE
+    global redirect target (LOGOUT_REDIRECT_URL) — that meant every
+    logout, including the idle-timeout auto-logout, sent lecturers to
+    the student login page. Role has to be captured BEFORE calling
+    auth_logout(), since request.user becomes AnonymousUser immediately
+    after and loses .role entirely.
+    """
+    role = request.user.role if request.user.is_authenticated else None
+    auth_logout(request)
+
+    if role == User.Role.LECTURER:
+        return redirect("lecturer_login")
+    return redirect("student_login")

@@ -82,10 +82,17 @@
 {% else %}
 <header class="site-header">
     <div class="container header-inner">
-        <a href="{% url 'student_login' %}" class="brand">LAMS</a>
-        <nav class="nav-links">
-            <!--<a href="{% url 'student_login' %}">Log in</a>-->
-        </nav>
+        {% if "/lams/lecturer/" in request.path or "/activate/lecturer/" in request.path or role == "lecturer" %}
+            <a href="{% url 'lecturer_login' %}" class="brand">LAMS</a>
+            <nav class="nav-links">
+                <a href="{% url 'lecturer_login' %}">Log in</a>
+            </nav>
+        {% else %}
+            <a href="{% url 'student_login' %}" class="brand">LAMS</a>
+            <nav class="nav-links">
+                <a href="{% url 'student_login' %}">Log in</a>
+            </nav>
+        {% endif %}
     </div>
 </header>
 {% endif %}
@@ -207,6 +214,7 @@
     }, 1000);
 })();
 </script>
+
 {% endif %}
 
 <script>

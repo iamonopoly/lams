@@ -9,7 +9,11 @@
         If you don't see it, check your spam folder.
     </p>
     <p class="form-footer">
-        <a href="{% url 'student_login' %}">Back to login</a>
+        {% if role == "lecturer" %}
+            <a href="{% url 'lecturer_login' %}">Back to login</a>
+        {% else %}
+            <a href="{% url 'student_login' %}">Back to login</a>
+        {% endif %}
     </p>
 </div>
 {% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Add Result{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Add a Result</h1>
+    <p class="subtitle">
+        {{ roster_entry.reg_number }} — {{ roster_entry.name }} ({{ course.code }})<br>
+        Using the columns from the current active upload.
+    </p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <p class="field-error">{{ form.non_field_errors|join:", " }}</p>
+        {% endif %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                <p class="field-hint">Leave blank if this component wasn't graded for this student.</p>
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn-role">Add result</button>
+    </form>
+
+    <p class="form-footer"><a href="{% url 'roster_list' course.id %}">&larr; Back to roster</a></p>
+</div>
+{% endblock %}

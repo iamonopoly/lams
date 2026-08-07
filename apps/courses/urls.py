@@ -9,13 +9,26 @@ urlpatterns = [
 
     path("roster/template/", views.roster_template_download, name="roster_template_download"),
     path("<int:course_id>/roster/upload/", views.roster_upload, name="roster_upload"),
+
+    #path("<int:course_id>/roster/", views.roster_list, name="roster_list"),
+    #path("<int:course_id>/roster/<int:roster_id>/edit/", views.roster_edit, name="roster_edit"),
+    #path("<int:course_id>/roster/<int:roster_id>/delete/", views.roster_delete, name="roster_delete"),
+
     path("<int:course_id>/roster/", views.roster_list, name="roster_list"),
+    path("<int:course_id>/roster/add/", views.roster_quick_add, name="roster_quick_add"),
     path("<int:course_id>/roster/<int:roster_id>/edit/", views.roster_edit, name="roster_edit"),
     path("<int:course_id>/roster/<int:roster_id>/delete/", views.roster_delete, name="roster_delete"),
+    path("<int:course_id>/roster/<int:roster_id>/add-result/", views.result_quick_add,name="result_quick_add",
+    ),
 
     path("results/template/", views.result_template_download, name="result_template_download"),
     path("<int:course_id>/results/upload/", views.result_upload, name="result_upload"),
     path("<int:course_id>/results/<int:batch_id>/", views.batch_detail, name="batch_detail"),
+    path(
+        "<int:course_id>/results/<int:batch_id>/download/",
+        views.download_batch_excel,
+        name="download_batch_excel",
+    ),
     path("<int:course_id>/results/<int:batch_id>/activate/", views.batch_activate, name="batch_activate"),
     path("<int:course_id>/results/<int:batch_id>/delete/", views.batch_delete, name="batch_delete"),
     path(
