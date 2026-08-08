@@ -20,7 +20,14 @@
     </a>
 
     <nav class="sidebar-nav">
-        {% if request.user.is_student %}
+        {% if request.user.is_admin %}
+            <a href="{% url 'admin_user_list' %}" class="sidebar-link {% if 'admin-panel' in request.path %}is-active{% endif %}">
+                <span class="sidebar-icon">
+                    <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M4 17c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </span>
+                Manage Accounts
+            </a>
+        {% elif request.user.is_student %}
             <a href="{% url 'student_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_dashboard' %}is-active{% endif %}">
                 <span class="sidebar-icon">
                     <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.3" fill="currentColor" opacity="0.55"/><rect x="11" y="3" width="6" height="6" rx="1.3" fill="currentColor"/><rect x="3" y="11" width="6" height="6" rx="1.3" fill="currentColor"/><rect x="11" y="11" width="6" height="6" rx="1.3" fill="currentColor" opacity="0.55"/></svg>
@@ -53,16 +60,6 @@
                 Comment Inbox
             </a>
         {% endif %}
-
-        {% if request.user.is_superuser %}
-            <p class="sidebar-section-label">Administrator</p>
-            <a href="{% url 'admin_user_list' %}" class="sidebar-link sidebar-link--admin {% if 'admin-panel' in request.path %}is-active{% endif %}">
-                <span class="sidebar-icon">
-                    <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M4 17c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                </span>
-                Manage Accounts
-            </a>
-        {% endif %}
     </nav>
 
     <div class="sidebar-footer">
@@ -75,6 +72,7 @@
         </div>
         <form method="post" action="{% url 'logout' %}" class="logout-form">
             {% csrf_token %}
+            <input type="hidden" name="role_hint" value="{{ request.user.role }}">
             <button type="submit" class="sidebar-logout">Log out</button>
         </form>
     </div>
@@ -82,7 +80,12 @@
 {% else %}
 <header class="site-header">
     <div class="container header-inner">
-        {% if "/lams/lecturer/" in request.path or "/activate/lecturer/" in request.path or role == "lecturer" %}
+        {% if "/lams/admin/" in request.path or role == "admin" %}
+            <a href="{% url 'admin_login' %}" class="brand">LAMS</a>
+            <nav class="nav-links">
+                <a href="{% url 'admin_login' %}">Log in</a>
+            </nav>
+        {% elif "/lams/lecturer/" in request.path or "/activate/lecturer/" in request.path or role == "lecturer" %}
             <a href="{% url 'lecturer_login' %}" class="brand">LAMS</a>
             <nav class="nav-links">
                 <a href="{% url 'lecturer_login' %}">Log in</a>
@@ -138,6 +141,7 @@
 
 <form id="idle-logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
     {% csrf_token %}
+    <input type="hidden" name="role_hint" value="{{ request.user.role }}">
 </form>
 
 <script>

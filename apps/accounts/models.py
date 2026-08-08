@@ -33,7 +33,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
-        extra_fields.setdefault("role", User.Role.LECTURER)
+        extra_fields.setdefault("role", User.Role.ADMIN)
         if not password:
             raise ValueError("Superusers must have a password.")
         return self.create_user(email, password, **extra_fields)
@@ -53,6 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Role(models.TextChoices):
         STUDENT = "STUDENT", "Student"
         LECTURER = "LECTURER", "Lecturer"
+        ADMIN = "ADMIN", "Administrator"
 
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=150)
@@ -76,6 +77,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_lecturer(self):
         return self.role == self.Role.LECTURER
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
 
 
 class PreRegisteredStudent(models.Model):

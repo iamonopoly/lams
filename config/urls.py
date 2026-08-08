@@ -17,6 +17,7 @@ from django.conf.urls.static import static
 from django.urls import include, path
 
 from apps.accounts.views import (
+    AdminLoginView,
     LecturerLoginView,
     StudentLoginView,
     lecturer_register,
@@ -31,6 +32,9 @@ urlpatterns = [
     # Lecturer entry points — deliberately separate, under /lams/lecturer/.
     path("lams/lecturer/login/", LecturerLoginView.as_view(), name="lecturer_login"),
     path("lams/lecturer/register/", lecturer_register, name="lecturer_register"),
+
+    #Admin entry point
+    path("lams/admin/login/", AdminLoginView.as_view(), name="admin_login"),
 
     path("admin/", admin.site.urls),
     path("accounts/", include("apps.accounts.urls")),

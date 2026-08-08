@@ -14,7 +14,7 @@ def superuser_required(view_func):
     """
 
     @wraps(view_func)
-    @login_required(login_url="lecturer_login")
+    @login_required(login_url="admin_login")
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_superuser:
             raise PermissionDenied("This area is restricted to administrators.")

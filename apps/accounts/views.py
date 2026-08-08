@@ -296,6 +296,16 @@ class LecturerLoginView(RoleLoginView):
     }
 
 
+class AdminLoginView(RoleLoginView):
+    expected_role = User.Role.ADMIN
+    extra_context = {
+        "role": "admin",
+        "role_label": "Administrator",
+        "other_role_login_url": "lecturer_login",
+        "register_url": None,  # no self-registration for admin accounts
+    }
+
+
 def dashboard_redirect(request):
     """Single named URL ('dashboard') that LOGIN_REDIRECT_URL points to.
     Sends the user to the correct role-specific dashboard so templates and
@@ -306,9 +316,13 @@ def dashboard_redirect(request):
         # fallback here since this view doesn't know which role someone
         # was trying to reach.
         return redirect("student_login")
+    if request.user.is_admin:
+        return redirect("admin_user_list")
     if request.user.is_student:
         return redirect("student_dashboard")
     return redirect("lecturer_dashboard")
+
+
 
 # ── Admin panel (superuser only) ─────────────────────────────────────────
 
@@ -399,16 +413,23 @@ def session_keepalive(request):
 @require_POST
 def logout_view(request):
     """
-    Replaces Django's built-in LogoutView, which only supports ONE
-    global redirect target (LOGOUT_REDIRECT_URL) — that meant every
-    logout, including the idle-timeout auto-logout, sent lecturers to
-    the student login page. Role has to be captured BEFORE calling
-    auth_logout(), since request.user becomes AnonymousUser immediately
-    after and loses .role entirely.
+    Replaces Django's built-in LogoutView. Role must be read from the
+    'role_hint' POST field (baked into the logout form at PAGE RENDER
+    time) rather than from request.user — by the time an idle-timeout
+    auto-logout POST arrives, the session has often already expired
+    server-side (nothing refreshes it during pure idle time), so
+    request.user is already AnonymousUser before this view even runs.
+    request.user.role is kept only as a fallback for any logout form
+    that doesn't send the hint.
     """
-    role = request.user.role if request.user.is_authenticated else None
+    role_hint = request.POST.get("role_hint")
+    if role_hint not in (User.Role.STUDENT, User.Role.LECTURER, User.Role.ADMIN):
+        role_hint = request.user.role if request.user.is_authenticated else None
+
     auth_logout(request)
 
-    if role == User.Role.LECTURER:
+    if role_hint == User.Role.ADMIN:
+        return redirect("admin_login")
+    if role_hint == User.Role.LECTURER:
         return redirect("lecturer_login")
     return redirect("student_login")

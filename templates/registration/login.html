@@ -35,14 +35,15 @@
         <button type="submit" class="btn-role">Log in</button>
     </form>
 
-    <p class="form-footer">
-        {% if role == "lecturer" %}
-            New lecturer? <a href="{% url 'lecturer_register' %}">Register here</a>
-        {% else %}
-            New student? <a href="{% url 'student_register' %}">Register here</a>
-        {% endif %}
-    </p>
-
+    {% if role != "admin" %}
+        <p class="form-footer">
+            {% if role == "lecturer" %}
+                New lecturer? <a href="{% url 'lecturer_register' %}">Register here</a>
+            {% else %}
+                New student? <a href="{% url 'student_register' %}">Register here</a>
+            {% endif %}
+        </p>
+    {% endif %}    
     <!--
     <p class="form-footer form-footer-muted">
         {% if role == "lecturer" %}
